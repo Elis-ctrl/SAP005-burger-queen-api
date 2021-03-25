@@ -6,4 +6,5 @@ const router = Router()
 // aqui vai as requisições
 router.get("/", ExampleController.getAllExamples)
 
+
 module.exports = router

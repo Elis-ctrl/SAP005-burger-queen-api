@@ -1,57 +1,75 @@
-// aqui vai o código que acessa o banco de dados
+const database = require('../db/models')
 
-const users = [
-  { uid: 1, username: 'Pedro Pinto', email: 'ppinto@ppl.com' },
-  { uid: 2, username: 'Francisco', email: 'francisco@ppl.com' }, 
-  { uid: 3, username: 'Carla Figueiredo', email: 'cfig@ppl.com' }
-];
 
-const getAllUsers = (req, res) => {
-  console.log("retorno de json com objeto fixo")
-  res.send(users);
+const getAllUsers = async (req, res, next) => {
+  try{
+    const user = await database.Users.findAll()
+      res.status(200).json(user);
+    
+  }
+  catch(e) {
+      next()
+  }
 };
 
-const postUsers = (req, res) => {
-  users.push(req.body)
-  console.log("post de produtos")
-  res.send({
-    mensagem: 'insere um usuario'
-  })
-}
+const postUsers = async (req, res, next) => {
 
-const getIdUsers = ('/:uid', (req, res) => {
-  // const CreatUser = await users.create({name: 'teste01', email: 'teste@t.com'});
+  const { name, email, password, role, restaurant } = req.body;
 
-  const id = req.params.uid
-  if (id == Number) {
-    res.send({
-      mensagem:'pegando o Id de um usuario',
-      uid: id
-    });
-  } else {
-    res.send({
-      mensagem: 'Erro no Id'
-    });
+  try {
+    const result = await database.Users.create({name, email, password, role, restaurant});
+
+    res.status(201).send(result)
+    
+  } catch (error) {
+    next()
   }
-});
+};
 
-const putIdUsers = ('/:uid', (req, res) => {
-  const id = req.params.uid
-    if (id === Number) {
-    res.send({
-      mensagem:'inserindo um usuario atraves do id',
-      id: id
-    });
+const getIdUsers = async (req, res, next) => {
+  
+  const id = req.params.id
+
+  try {
+    const user = await database.Users.findOne({ where: { id: id }, attributes: {exclude: ['password'] } });
+    
+    if (user === null) {
+      res.status(404).json('user not found')
     } else {
-    res.send({
-      mensagem: 'Erro no Id'
-    });
+      res.send(user)
+    }
+  } catch (error) {
+    next()
   }
+
+};
+
+const putIdUsers = ('/:id', (req, res, next) => {
+
+  const id = req.params.id
+
+  try {
+
+    if (id === null) {
+      res.send({
+        mensagem:'inserindo um usuario atraves do id',
+        id: id
+      });
+      } else {
+      res.send({
+        mensagem: 'Erro no Id'
+      });
+    }
+    
+  } catch (error) {
+    next()
+  }
+
 });
 
-const deleteUsers = ('/:uid', (req, res) => {
+const deleteUsers = ('/:id', (req, res) => {
   const id = req.params.uid
-    if (id === Number) {
+    if (id === null) {
     res.send({
       mensagem:'retirado um usuario atraves do id',
       id: id
@@ -64,3 +82,32 @@ const deleteUsers = ('/:uid', (req, res) => {
 });
 
 module.exports = { getAllUsers, postUsers, getIdUsers, putIdUsers, deleteUsers}
+
+
+// aqui vai o código que manda o que tem que fazer para o models e ele que faz a conexão do banco de dados
+// video da Ju(jeito backend de fazer)
+// class usercontroller {
+//   static async getusers (req,res){
+//     const users = await Database.user.findAll()
+//     res.status(200).json(users)
+//   }
+//   todos os metodos 
+// };
+// module.exports = {userController}
+
+// sem o async e o await com o then catch
+// const postUsers = (req, res, next) => {
+//   const { name, email, password, role } = req.body;
+  
+//   User.create({
+//     name,
+//     email,
+//     password,
+//     role,
+//     restaurant,
+//   })
+//     .then((result) => {
+//       res.status(201).json(result); //return with ID -> 201 (CREATED)
+//     })
+//     .catch(next);
+// }

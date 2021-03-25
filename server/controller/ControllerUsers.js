@@ -1,13 +1,12 @@
 const database = require('../db/models')
 
-
 const getAllUsers = async (req, res, next) => {
   try{
     const user = await database.Users.findAll()
       res.status(200).json(user);
     
   }
-  catch(e) {
+  catch(error) {
       next()
   }
 };

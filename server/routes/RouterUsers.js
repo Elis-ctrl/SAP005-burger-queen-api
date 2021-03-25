@@ -8,7 +8,7 @@ const router = Router()
 router.get("/", ControllerUsers.getAllUsers)
 router.post('/', ControllerUsers.postUsers);
 router.get("/:id", ControllerUsers.getIdUsers)
-// router.put("/:uid", ControllerUsers.putIdUsers);
-// router.delete("/:uid", ControllerUsers.deleteUsers);
+// router.put("/:id", ControllerUsers.updateUsers);
+// router.delete("/:id", ControllerUsers.deleteUsers);
 
 module.exports = router

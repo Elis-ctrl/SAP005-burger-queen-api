@@ -44,44 +44,38 @@ const getIdUsers = async (req, res, next) => {
 
 };
 
-const putIdUsers = ('/:id', (req, res, next) => {
+const updateUsers = async (req, res, next) => {
 
+  const name = req.body.name
+  
+  try {
+
+    const user = await database.Users.update({ where: { name: name } });
+      res.status(201).json(user)
+
+  } catch (error) {
+    next()
+  }
+};
+
+
+const deleteUsers = async (req, res, next) => {
+  
   const id = req.params.id
 
   try {
 
-    if (id === null) {
-      res.send({
-        mensagem:'inserindo um usuario atraves do id',
-        id: id
-      });
-      } else {
-      res.send({
-        mensagem: 'Erro no Id'
-      });
-    }
-    
+    const user = await database.Users.destroy({ where: { id: id } });
+      res.status(201).json(user)
+
   } catch (error) {
     next()
   }
 
-});
+};
 
-const deleteUsers = ('/:id', (req, res) => {
-  const id = req.params.uid
-    if (id === null) {
-    res.send({
-      mensagem:'retirado um usuario atraves do id',
-      id: id
-    });
-    } else {
-    res.send({
-      mensagem: 'Erro no Id'
-    });
-  }
-});
 
-module.exports = { getAllUsers, postUsers, getIdUsers, putIdUsers, deleteUsers}
+module.exports = { getAllUsers, postUsers, getIdUsers, updateUsers, deleteUsers}
 
 
 // aqui vai o código que manda o que tem que fazer para o models e ele que faz a conexão do banco de dados

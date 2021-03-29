@@ -1,13 +1,4 @@
-const orders = [
-  { table: 1, 
-    product: 'Hamburguer', 
-    price: 15.00 
-  },
-  { table: 2, 
-    product: 'Refrigerante', 
-    price: 13.00 
-  }
-];
+const database = require('../db/models')
 
 const getAllOrders = (req, res) => {
   console.log("retorno de json com uma lista fixa ")

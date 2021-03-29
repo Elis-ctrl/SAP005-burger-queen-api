@@ -45,18 +45,23 @@ const getIdUsers = async (req, res, next) => {
 
 const updateUsers = async (req, res, next) => {
 
-  const name = req.body.name
+  const id = req.params.id
   
   try {
-
-    const user = await database.Users.update({ where: { name: name } });
-      res.status(201).json(user)
-
+    const userUp = await database.Users.update({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      restaurant: req.body.restaurant,
+      role: req.body.role
+    },{
+      where: { id: id }
+    })
+      res.status(201).json(userUp)
   } catch (error) {
     next()
   }
 };
-
 
 const deleteUsers = async (req, res, next) => {
   

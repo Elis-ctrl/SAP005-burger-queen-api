@@ -1,71 +1,80 @@
-// aqui vai o código que acessa o banco de dados
+const database = require('../db/models')
 
-const products = [
-  { productid: 1, product: 'Hamburguer', price: 10.00 },
-  { productid: 2, product: 'Batata', price: 5.00}, 
-  { productid: 3, product: 'Refri', price: 8.00 }
-];
-
-const getAllProducts = (req, res) => {
-  console.log("retorno de json com uma lista fixa ")
-  res.send(products);
+const getAllProducts = async (req, res, next) => {
+  try{
+    const product = await database.Products.findAll()
+      res.status(200).json(product);
+  }
+  catch(error) {
+      next()
+  }
 };
 
-const postProducts = (req, res) => {
+const postProducts = async (req, res, next) => {
 
-  const product ={
-    productid: req.body.productid,
-    name: req.body.name,
-    price: req.body.price
+  const { name, flavor, complement, price, image, type, subType } = req.body;
 
+  try {
+    const result = await database.Products.create({name, flavor, complement, price, image, type, subType});
+
+    res.status(201).send(result)
+    
+  } catch (error) {
+    next()
   }
-  console.log("post de produtos")
-  res.send({
-    mensagem: 'insere um produto',
-    produtoCriado:product
-  })
-}
+};
 
-const getIdProducts = ('/:productid', (req, res) => {
-  const id = req.params.productid
-  if (id === Number) {
-    res.send({
-      mensagem:'pegando o Id de um produto',
-      id: id
-    });
-  } else {
-    res.send({
-      mensagem: 'Erro no Id'
-    });
-  }
-});
+const getIdProducts = async (req, res, next) => {
 
-const putIdProducts = ('/:productid', (req, res) => {
-  const id = req.params.productid
-    if (id === Number) {
-    res.send({
-      mensagem:'inserindo um produto atraves do id',
-      id: id
-    });
+  const id = req.params.id
+
+  try {
+    const product = await database.Products.findOne({ where: { id: id } });
+    
+    if (product === null) {
+      res.status(404).json('product not found')
     } else {
-    res.send({
-      mensagem: 'Erro no Id'
-    });
+      res.send(user)
+    }
+  } catch (error) {
+    next()
   }
-});
+};
 
-const deleteProducts = ('/:productid', (req, res) => {
-  const id = req.params.productid
-    if (id === Number) {
-    res.send({
-      mensagem:'retirado um produto atraves do id',
-      id: id
-    });
-    } else {
-    res.send({
-      mensagem: 'Erro no Id'
-    });
+const updateProducts = async (req, res, next) => {
+
+  const id = req.params.id
+
+  try {
+    const productUp = await database.Products.update({
+      name: req.body.name,
+      flavor: req.body.flavor,
+      complement: req.body.complement,
+      price: req.body.price,
+      image: req.body.image,
+      type: req.body.type,
+      subType:req.body.subType
+    },{
+      where: { id: id }
+    })
+      res.status(201).json(productUp)
+  } catch (error) {
+    next()
   }
-});
+};
 
-module.exports = { getAllProducts, postProducts, getIdProducts, putIdProducts, deleteProducts }
+const deleteProducts = async (req, res, next) => {
+
+  const id = req.params.id
+
+  try {
+
+    const product = await database.Products.destroy({ where: { id: id } });
+      res.status(201).json(product)
+
+  } catch (error) {
+    next()
+  }
+};
+
+module.exports = { getAllProducts, postProducts, getIdProducts, updateProducts, deleteProducts }

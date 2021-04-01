@@ -34,7 +34,7 @@ const getIdProducts = async (req, res, next) => {
     if (product === null) {
       res.status(404).json('product not found')
     } else {
-      res.send(user)
+      res.send(product)
     }
   } catch (error) {
     next()

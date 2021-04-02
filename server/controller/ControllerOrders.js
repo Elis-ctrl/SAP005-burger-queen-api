@@ -1,113 +1,217 @@
-const database = require("../db/models")
+const database = require('../db/models')
 
-const getAllOrders =async (req, res, next) => {
-  console.log("passou aqui")
-  try{
-  const order = await database.Orders.findAll({where: {id:Number(3) }})
-    console.log(order,"texto teambem")
-    res.status(200).json(order.toJSON());
-    console.log("TEXTO AQUI", res.status(201).json(order.toJSON()))
-}
-  catch(error) {
+const getAllOrders = async (req, res, next) => {
+  
+  try {
+
+    const orders = await database.Orders.findAll({ 
+      include: [
+        {
+        model: database.Products,
+        attributes: ["id", "name", "flavor","complement"],
+          through: {
+            model: database.ProductsOrders,
+            attributes:["qtd"]
+          }
+        }, 
+        {
+          model: database.Users,
+          attributes: ["name", "id"]
+        }
+      ]
+    });
+
+    orders = order.map(order => {
+      return {
+        "order_id": order.id,
+        "client": order.clientName,
+        "table": order.table,
+        "userRole":order.Users.name,
+        "userId":order.Users.id,
+        "createdAt": order.createdAt,
+        "updatedAt": order.updatedAt,
+        "products": order.order.map(product => {
+          return {  
+            "id": product.id,
+            "name": product.name,
+            "qtd": product.ProductsOrders.qtd,
+            "flavor": product.flavor,
+            "complement": product.complement,
+          }
+        })
+      }
+    })
+    res.status(201).send(orders);
+  } catch (error) {
       next()
   }
-
 };
 
-// const postOrders = (req, res, next) => {
-  
-//   const product = {
-//     {
-//       "client": req.body.
-//       "table": req.body
-//       "products": [
-//         {
-//           "id": 0,
-//           "qtd": 0
-//         }
-//       ]
-//     }
-//   }
-//   const getProducts = await database.Products.map({
-//     "products": order.orders.map(product => {
-//       return {
-//         "id": product.id,
-//         "name": product.name,
-//         "qtd": product.orderProductsQtd.qtd,
-//         "flavor": product.flavor,
-//         "complement": product.complement,
-//       }
-//       const makeOrder = await database.Orders.create({order});
-//   });
+const postOrders = async (req, res, next) => {
+  console.log("entrou postorders")
+  try {
 
+  const {user_id, clientName,table,status } = req.body;
 
-  
-//   try {
+  const order = await database.Orders.create({user_id, clientName,table, status});
+  console.log(order)
 
-//     res.status(201).send(result)
+  let products = red.body.products;
+
+  products = products.map(product => {
+    return {
+      "order_id": order.id,
+      "product_id": product.id,
+      "qtd": product.qtd
+    }
+  })
     
-//   } catch (error) {
-//     next()
-//   }
+  await database.ProductsOrders.bulkCreate(products);
 
-
-// };
-
-// const getIdOrders =  (req, res, next) => {
-
-//   const id = req.params.id
-//   const orders = await database.Products.findOne({ where: { id: id } });
-
-//   try {
+    res.status(201).json({msg: " Pedido realizado com sucesso" })
     
-//     if (product === null) {
-//       res.status(404).json('product not found')
-//     } else {
-//       res.send(product)
-//     }
-//   } catch (error) {
-//     next()
-//   }
-// };
+  } catch (error) {
+    next()
+  }
+};
 
-// const upOrders = async (req, res, next) => {
-  
-//   const id = req.params.id
-//   const upBody = req.body.status
-//   const gettingById = await database.getIdOrders(id);
+const getIdOrders = async (req, res, next) => {
 
-//   try {
-//     if(gettingById){
+  const id = req.params.order_id
+
+    try {
       
-//       const orderUp = await database.Orders.update(id,upBody)
+      const orders = await database.Orders.findOne({ where: { id: id }, 
+        include: [
+          {
+          model: database.Products,
+          attributes: ["id", "name", "flavor","complement", "price"],
+            through: {
+              model: database.ProductsOrders,
+              attributes:["qtd"]
+            }
+          }, 
+          {
+            model: database.Users,
+            attributes: ["name", "id"]
+          }
+        ]
+      });
+
+      orders = order.map(order => {
+        return {
+          "order_id": order.id,
+          "client": order.clientName,
+          "table": order.table,
+          "userRole":order.Users.name,
+          "userId":order.Users.id,
+          "createdAt": order.createdAt,
+          "updatedAt": order.updatedAt,
+          "products": order.order.map(product => {
+            return {  
+              "id": product.id,
+              "name": product.name,
+              "qtd": product.orderProductsQtd.qtd,
+              "flavor": product.flavor,
+              "complement": product.complement,
+            }
+          })
+        }
+      })
+      if(orders == null){
+        res.status(404).json({error: "Ordem não encontrada"});
+      } 
+      res.status(201).send(orders);
+    } catch (error) {
+    next()
+  }
+};
+
+const upOrders = async (req, res, next) => {
+  try {
+  const id = req.params.order_id;
+  const newOrder = req.body.status;
+  
+  const orders = await database.Orders.findOne({ where: { id: id }, 
+    include: [
+      {
+      model: database.Products,
+      attributes: ["id", "name", "flavor","complement", "price"],
+        through: {
+          model: database.ProductsOrders,
+          attributes:["qtd"]
+        }
+      }, 
+      {
+        model: database.Users,
+        attributes: ["name", "id"]
+      }
+    ]
+  });
+    if(orders !== null){
+      const productUp = await database.Orders.update({
+        status:{newOrder},
+        where: {id:id}, 
+        cascade:true
+      })
+    }
+      res.status(204).send(productUp)
+  } catch (error) {
+    next()
+  }
+};
+
+const deleteOrders = async (req, res, next) => {
+
+  const id = req.params.order_id
+
+  try {
     
-//       res.status(204).json(orderUp)
-//     }
-//   } catch (error) {
-//     next()
-//   }
-// };
+    const orders = await database.Orders.findOne({ where: { id: id }, 
+      include: [
+        {
+        model: database.Products,
+        attributes: ["id", "name", "flavor","complement", "price"],
+          through: {
+            model: database.ProductsOrders,
+            attributes:["qtd"]
+          }
+        }, 
+        {
+          model: database.Users,
+          attributes: ["name", "id"]
+        }
+      ]
+    });
 
-// const deleteOrders = async (req, res, next) => {
+    orders = order.map(order => {
+      return {
+        "order_id": order.id,
+        "client": order.clientName,
+        "table": order.table,
+        "userRole":order.Users.name,
+        "userId":order.Users.id,
+        "createdAt": order.createdAt,
+        "updatedAt": order.updatedAt,
+        "products": order.order.map(product => {
+          return {  
+            "id": product.id,
+            "name": product.name,
+            "qtd": product.orderProductsQtd.qtd,
+            "flavor": product.flavor,
+            "complement": product.complement,
+          }
+        })
+      }
+    })
 
-//   const id = req.params.id
-//   const gettingById = await database.getIdOrders(id);
+    if (orders !== null) {
+      await database.Orders.destroy({ where: { id: id }}) 
+      res.status(200).json('Ordem deletada')
+    } 
+  } catch (error) {
+    next()
+  }
+};
 
-//   try {
-//     if(gettingById) {
-      
-//       const order = await database.Orders.destroy({ where: { id: id }, cascate:true });
-//         res.status(200).json(order)
-//     }
-
-//   } catch (error) {
-//     next()
-//   }
-
-// };
-
-module.exports = { getAllOrders }
-
-
-
-
+module.exports = { getAllOrders, postOrders, getIdOrders, upOrders, deleteOrders }

@@ -1,13 +1,17 @@
-'use strict';
+"use strict";
 const {
   Model
-} = require('sequelize');
+} = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Products extends Model {
 
     static associate(models) {
-      Products.belongsToMany(models.Orders, {through: "ProductsOrders",
-      foreignKey: "productId", onDelete: "CASCADE"})
+      
+      Products.belongsToMany(models.Orders, {
+        through: "ProductsOrders",
+        foreignKey: "product_id", 
+        onDelete: "CASCADE"
+      });
     }
   };
   Products.init({
@@ -20,7 +24,8 @@ module.exports = (sequelize, DataTypes) => {
     subType: DataTypes.STRING
   }, {
     sequelize,
-    modelName: 'Products',
+    modelName: "Products",
   });
+  
   return Products;
 };

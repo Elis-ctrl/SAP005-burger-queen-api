@@ -6,17 +6,20 @@ module.exports = (sequelize, DataTypes) => {
   class Orders extends Model {
 
     static associate(models) {
+      
+      Orders.belongsToMany(models.Products, {
+        through: "ProductsOrders",
+        foreignKey: "order_id", 
+        onDelete:"CASCADE"
+      }),
       Orders.belongsTo(models.Users, {
-        foreignKey: "userId"
-      });
-      Orders.belongsToMany(models.Products, {through: "ProductsOrders",
-      foreignKey: "orderId"})
-    }
+        foreignKey: "user_id"
+      })
   }
-
+};
   Orders.init({
-    userId: DataTypes.INTEGER,
-    clientname: DataTypes.STRING,
+    user_id: DataTypes.INTEGER,
+    clientName: DataTypes.STRING,
     table: DataTypes.INTEGER,
     status: DataTypes.STRING
   }, {

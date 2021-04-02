@@ -16,6 +16,7 @@ const postUsers = async (req, res, next) => {
   const { name, email, password, role, restaurant } = req.body;
 
   try {
+
     const result = await database.Users.create({name, email, password, role, restaurant});
 
     res.status(201).send(result)
@@ -80,32 +81,3 @@ const deleteUsers = async (req, res, next) => {
 
 
 module.exports = { getAllUsers, postUsers, getIdUsers, updateUsers, deleteUsers}
-
-
-// aqui vai o código que manda o que tem que fazer para o models e ele que faz a conexão do banco de dados
-// video da Ju(jeito backend de fazer)
-// class usercontroller {
-//   static async getusers (req,res){
-//     const users = await Database.user.findAll()
-//     res.status(200).json(users)
-//   }
-//   todos os metodos 
-// };
-// module.exports = {userController}
-
-// sem o async e o await com o then catch
-// const postUsers = (req, res, next) => {
-//   const { name, email, password, role } = req.body;
-  
-//   User.create({
-//     name,
-//     email,
-//     password,
-//     role,
-//     restaurant,
-//   })
-//     .then((result) => {
-//       res.status(201).json(result); //return with ID -> 201 (CREATED)
-//     })
-//     .catch(next);
-// }
